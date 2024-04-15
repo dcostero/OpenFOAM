@@ -1,0 +1,35 @@
+#!/bin/sh
+cd ${0%/*} || exit 1    # Run from this directory
+
+# Source run functions
+. $WM_PROJECT_DIR/bin/tools/RunFunctions
+
+# Mesh
+runApplication blockMesh
+runApplication topoSet
+
+# Run
+runApplication decomposePar
+runParallel -s populationBalanceInitialDistributionFs foamPostProcess -func "
+    populationBalanceInitialDistributionFs
+    (
+        phase=particles,
+        initialDistributionFile=\"constant/initialDistribution.particles\"
+    )
+    "
+runParallel $(getApplication)
+runApplication reconstructPar -latestTime
+
+# Post-process
+runApplication foamPostProcess -func "
+    graphLayerAverage
+    (
+        name=graphCrossSection,
+        patches=(inlet),
+        axis=distance,
+        d.particles
+    )
+    " -latestTime
+cd validation && ./createGraphs
+
+#------------------------------------------------------------------------------

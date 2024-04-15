@@ -1,0 +1,6 @@
+hexRef8PoliMi = polyTopoChange/polyTopoChange/hexRefPoliMi
+
+$(hexRef8PoliMi)/hexRefPoliMi.C
+
+
+LIB = $(FOAM_USER_LIBBIN)/libdynamicMeshPoliMi

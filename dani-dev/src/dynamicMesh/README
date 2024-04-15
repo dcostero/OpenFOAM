@@ -1,0 +1,26 @@
+This folder constains the code necessary to compile hexRefPoliMi, which is a derived class from hexRef8 that works for both 2D and 3D problems.
+It overrides some of the original functions for the 2D case while using the original code for the 3D, whereas with the original functions (non overriden) or with if(!is2D) and a copy of the original code.
+To do so, some modifications are needed on the original hexRef8 class. To change it, we patch our own hexRef8.H, which is a version of the original one.
+We copy-paste it on the original place of OpenFOAM and recompile the whole class of openFOAM but with our desired changes.
+The changes in this file are mainly to add the virtual keyword on the functions to be overriden, as well as a virtual constructor and destructor.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+FUNCTIONS CHANGED:
+- is2D() : new function to indicate if its a 2D case
+
+- getAnchorCells : completely new function for 2D case. Has an if for the new code and the else with the original code from hexRef8.
+
+-storeMidPointInfo : The main change here is the map midPointToFaceMids. In the 3D case, it store the 2 face mids at both sides of the edgeMidPoint, so that using these 3 and the cell center we can create the internal faces. In 2D it's different as I only have 2 face mids: the ones of the 2 empty/wedge faces. When entering from the first face, we don't have access to the faceMid of the other face, so we store a couple of (faceMid, -1) linked to all the edgeMids of the face. When entering from the second face, we will have to "find" the other face mid, stored previously. For all the edge Mids of this second face, we will have entries of midPointToFaceMids like (faceMidOfSecondFace, faceMidOfFirstFace), which will set haveTwoFaceMids = true. Then, there's an if to skip the non-empty faces. Then, we have to find the projection of edgeMidPoint on the other face, called otherEdgeMidPoint and the projection of the anchor point. With that, we have all we need and we can proceed to create the faces. There are 4 ways of crating the faces, depending on if its 2D or 3D and on the faceOrder With that, we have all we need and we can proceed to create the faces. There are 4 ways of crating the faces, depending on if its 2D or 3D and on the faceOrder.. 
+
+- createInternalFaces : only changes the size of the maps with an if at the beginning. Added an if to skip internal faces in the loop and only refine empty/wedge faces. Added extra iff to check that in 2D we create exactly 4 internal faces (12 in 3D).
+
+- getSplitPoints : this function in 3D returns the center point of a refined cell. In 2D we dont have that point. Instead of doing that, we are projecting it into the master patch (the first empty/wedge) and taking the faceMid in this master face. So in 2D we unmark all the points not belonging to the master patch. There's only one if to deal with this.
+
+- setRefinement : if to only mark the cells for refinement but without creating the center point. In 2D we will have isRefinableFace with the empty/wedge faces of refined cells and we are going to mark all the edges of these faces for refinement (no internal edge is refined). In 2D, we will mark all faces needing refinement but we are only going to create the faceMidPoint when refinableFace = true. There's an if to skip the other ones, that are going to be split in 2. When adding the new cells, if to change the size from 8 to 4 (I created a new variable nAddedCellsPlusOne to deal with this). When splitting faces, the ones that got split in 4 use the original code. However, there's an if to deal with faces that get split in 2(only on the 2D case). The rest is the same as the original code.
+
+- setUnrefinement : in 2D the input is the list of faceMids of the faces on the master patch. If to select the internal faces, changing from 12 (3d) to 4 (2d). If to account for different number of cells to delete. 
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TODO LIST
+- maybe I can try to set masterPatch and slavePatch as private variables and use them all along hexRefPoliMi instead of calculating them everytime
+

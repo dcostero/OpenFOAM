@@ -1,0 +1,21 @@
+#!/bin/sh
+
+# Run from this directory
+cd "${0%/*}" || exit 1
+
+# Source run functions
+. $WM_PROJECT_DIR/bin/tools/RunFunctions
+
+runApplication zeroDimensionalMesh
+runApplication foamPostProcess -func "
+    populationBalanceInitialDistributionFs
+    (
+        phase=air1,
+        initialDistributionFile=\"constant/initialDistribution.air1\"
+    )
+    "
+runApplication $(getApplication)
+
+( cd validation && ./createGraphs )
+
+#------------------------------------------------------------------------------

@@ -1,0 +1,15 @@
+This class is a derived class from dynamicFvMesh, so a parallel class to dynamicRefineFvMesh.
+It has the original code from dynamicRefineFvMesh with the modifications required to perform the 2D refinement.
+It contains the logic for both cases based on the use of hexRefPoliMi, which is valid for both 2D and 3D.
+We cannot derive this function from dynamicRefineFvMesh and override some virtual functions because we cannot set meshCutter to hexRefPoliMi instead of hexRef8.
+We cannot modify the original code from openfoam to account for that because it doesn't see hexRefPoliMi and that would require too much changes.
+So a parallel class to dynamicRefineFvMesh has been chosen as the easiest way to deal with this.
+
+The only function changed is unrefine, which contains the different logic for the 2D case.
+There is also a small change in selectRefineCells to change the value of an int.
+The rest of the functions are exactly the same as the original
+
+There are also other changes derived from Tavazzi's work, to select different refine cells when the number of points is bigger than maxPoint, set by the user in the input dictionary.
+It basically changes the inputs of selectRefineCells and selectRefineCandidates with a new sortedError variable
+This causes some changes when calling these functions from update().
+

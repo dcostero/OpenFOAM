@@ -1,0 +1,25 @@
+This is a document to explain how to pass from the original hexRef8 for 3D
+to the new hexRef4 for 2D.
+
+REFINEMENT PART:
+
+I have changed 4 functions:
+- getAnchorCell (completely new for 2D)
+- storeMidPointInfo (I have a new one, changed from the 3D version BUT it has different inputs, so they are 2 different functions)
+- createInternalFace (I have a new one, fairly similar to the original but with major modifications. We could try to combine them but doesnt look straight forward.)
+- setRefinement (very similar to the original one BUT with major changes)
+
+Here, I have no idea how to combine them with the original ones effectively
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+UNREFINEMENT PART (NEW version based on points)
+
+I have changed only 2 functions (consistentUnrefinement works for 2D and 3D):
+-getSplitPoints: changed a couple of lines with an if to deal with boundaries
+-setUnrefinement: 2 or 3 minor modifications, to account for boundaries and the dimension of some lists.
+
+The unRefinemnt based on points requires to change only one function on dynamicRefineFvMesh, namely the update() one, where a few line must be added to select the faces on the slave patch.
+
+The rest of the functions concerning the unrefinement part does not need to be modified to account for the 2D case
+
+

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# source functions for compiling
+. $WM_PROJECT_DIR/wmake/scripts/AllwmakeParseArguments
+
+
+fileToCopy=polyTopoChange/polyTopoChange/hexRef8/hexRef8.H
+
+cp $fileToCopy $FOAM_SRC/dynamicMesh/$fileToCopy
+wmake -update -j $FOAM_SRC/dynamicMesh
+
+# compile new features in separate lib 
+wmake $wmakeOpts

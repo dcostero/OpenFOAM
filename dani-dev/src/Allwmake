@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# source functions for compiling
+. $WM_PROJECT_DIR/wmake/scripts/AllwmakeParseArguments
+
+# compile new features in separate lib 
+wmake all $wmakeOpts dynamicMesh 
+wmake $wmakeOpts dynamicRefinePoliMi
